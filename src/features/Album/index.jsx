@@ -1,4 +1,4 @@
-import { Box, IconButton } from '@material-ui/core';
+import { Box, CircularProgress, IconButton } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import CardMedia from '@material-ui/core/CardMedia';
 import Container from '@material-ui/core/Container';
@@ -57,18 +57,25 @@ export default function Album() {
   const [cards, setCards] = useState([]);
   const [chosenCard, setChosenCard] = useState({});
   const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchGiphys = async () => {
-      const params = {
-        api_key: process.env.REACT_APP_API_KEY,
-        limit: 24,
-        offset: offset
-      };
-      const giphys = await giphyApi.get(params);
-      setCards(giphys.data);
-    };
-    fetchGiphys();
+    setLoading(true);
+    
+    const fetchGiphys = setTimeout(async () => {
+        const params = {
+          api_key: process.env.REACT_APP_API_KEY,
+          limit: 24,
+          offset: offset
+        };
+        const giphys = await giphyApi.get(params);
+        setCards(giphys.data);
+        setLoading(false);
+    }, 3000);
+
+    return () => {
+      clearTimeout(fetchGiphys);
+    }
   }, [offset]);
 
   const handleClickOpen = (card) => {
@@ -87,7 +94,7 @@ export default function Album() {
   return (
     <React.Fragment>
       <CssBaseline />
-      <AppBar position="relative">
+      <AppBar position="fixed">
         <Toolbar>
           <IconButton style={{color: 'white'}} onClick={handleFetchGiphys}>
             <PhotoCameraIcon className={classes.icon} />
@@ -98,41 +105,45 @@ export default function Album() {
         </Toolbar>
       </AppBar>
       <main>
-        <Container className={classes.cardGrid} maxWidth="md">
-          <Grid container spacing={4}>
-            {cards.map((card, index) => (
-              <Grid item key={index} xs={6} sm={4} md={4} lg={3} xl={3}>
-                <Box mb={2}>
-                  <CardMedia
-                    className={classes.cardMedia}
-                    image={card.images.original.url}
-                    title={card.title}
-                    onClick={() => handleClickOpen(card)}
-                />
-                </Box>
-                <Typography align="center" noWrap variant="subtitle2" style={{fontSize: '0.7rem'}}>
-                  { card.title }
-                </Typography>                
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-        <Dialog
-          fullScreen
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="form-dialog-title"
-        >
-          <IconButton className={classes.closeButton} onClick={handleClose}>
-            <Close fontSize="large" />
-          </IconButton>
-          <img
-            style={{ height: '100%', width: '100%' }}
-            src={chosenCard.images?.original.url}
-            alt={chosenCard.title || ''}
-          />
-        
-        </Dialog>
+        <Box align="center" mt={12} mb={'auto'}>
+          {loading && <CircularProgress />}
+        </Box>
+        {!loading && (<>
+          <Container className={classes.cardGrid} maxWidth="md">
+            <Grid container spacing={4}>
+              {cards.map((card, index) => (
+                <Grid item key={index} xs={6} sm={4} md={4} lg={3} xl={3}>
+                  <Box mb={2}>
+                    <CardMedia
+                      className={classes.cardMedia}
+                      image={card.images.original.url}
+                      title={card.title}
+                      onClick={() => handleClickOpen(card)}
+                  />
+                  </Box>
+                  <Typography align="center" noWrap variant="subtitle2" style={{fontSize: '0.7rem'}}>
+                    { card.title }
+                  </Typography>                
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+          <Dialog
+            fullScreen
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="form-dialog-title"
+          >
+            <IconButton className={classes.closeButton} onClick={handleClose}>
+              <Close fontSize="large" />
+            </IconButton>
+            <img
+              style={{ height: '100%', width: '100%' }}
+              src={chosenCard.images?.original.url}
+              alt={chosenCard.title || ''}
+            />
+          </Dialog>
+        </>)}
       </main>
       {/* Footer */}
       <footer className={classes.footer}>
