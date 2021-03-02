@@ -99,7 +99,7 @@ export default function Album() {
           <IconButton style={{color: 'white'}} onClick={handleFetchGiphys}>
             <PhotoCameraIcon className={classes.icon} />
             <Typography variant="h6" color="inherit" noWrap>
-              New Album
+              Get New Album
             </Typography>
           </IconButton>
         </Toolbar>
